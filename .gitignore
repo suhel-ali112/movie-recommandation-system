@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+.streamlit/secrets.toml
+.ipynb_checkpoints/
+.vscode/
+popcornai.db

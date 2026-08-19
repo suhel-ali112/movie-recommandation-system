@@ -1,0 +1,525 @@
+/* ==========================================================================
+   PopcornAI — Premium OTT Theme (v5: bugfixes + refreshed palette + animation)
+   ========================================================================== */
+
+:root{
+    --bg:#0A0A10;
+    --card:#16161D;
+    --card-hover:#1C1C25;
+    --primary:#E63950;      /* richer crimson-pink instead of flat red */
+    --secondary:#FF6B6B;
+    --gold:#FFB020;         /* warm gold accent for ratings/highlights */
+    --accent:#7C3AED;       /* violet used only in hero gradient for depth */
+    --text:#F5F5F7;
+    --muted:#9A9AA5;
+    --border:#25252E;
+}
+
+#MainMenu, header, footer {visibility:hidden;}
+.block-container{padding-top:0rem;padding-bottom:3rem;max-width:1200px;}
+.stApp{
+    background:radial-gradient(ellipse at top, #15151d 0%, var(--bg) 55%);
+    font-family:'Inter',sans-serif;
+    color:var(--text);
+}
+::selection{background:var(--primary);color:#fff;}
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+::-webkit-scrollbar-thumb:hover{background:var(--primary);}
+
+/* ---------- Navbar row wrapper ---------- */
+[class*="st-key-cv_navbar_row"]{
+    display:flex;align-items:center;
+    border-bottom:1px solid var(--border);
+    padding:5px 0 5px 0;margin-bottom:10px;
+    position:sticky;top:0;z-index:999;
+    background:rgba(10,10,16,0.9);backdrop-filter:blur(14px);
+    animation:navIn .5s ease;
+}
+@keyframes navIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+
+/* ---------- Logo (SVG mark + wordmark) ---------- */
+.cv-logo-wrap{display:flex;align-items:center;gap:9px;padding-top:2px;}
+.cv-logo-mark{flex-shrink:0;filter:drop-shadow(0 4px 10px rgba(230,57,80,0.45));
+    animation:logoFloat 3.2s ease-in-out infinite;}
+@keyframes logoFloat{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-2px) rotate(-2deg);}}
+.cv-logo-text{
+    font-family:'Poppins',sans-serif;font-weight:800;font-size:1.32rem;
+    background:linear-gradient(90deg,#fff,#ff8a8a 140%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    letter-spacing:-0.3px;white-space:nowrap;
+}
+
+/* ---------- Nav link buttons (Home/Trending/Top Rated/Watchlist) ---------- */
+/* FIX: "Trending" was wrapping to 2 lines — nowrap + no shrink now enforced */
+[class*="st-key-nav_"] button{
+    background:transparent !important;
+    border:none !important;
+    box-shadow:none !important;
+    color:var(--muted) !important;
+    font-family:'Poppins',sans-serif !important;
+    font-weight:500 !important;
+    font-size:0.80rem !important;
+    padding:6px 4px !important;
+    width:auto !important;
+    white-space:nowrap !important;
+    overflow:visible !important;
+    position:relative;
+    transition:color .2s ease, transform .15s ease !important;
+}
+[class*="st-key-nav_"] button:hover{
+    color:var(--text) !important;
+    transform:translateY(-1px) !important;
+}
+[class*="st-key-nav_active"] button{
+    color:var(--text) !important;
+    border-bottom:2px solid var(--primary) !important;
+    border-radius:0 !important;
+    animation:navPulse .35s ease;
+}
+@keyframes navPulse{0%{opacity:0.5;}100%{opacity:1;}}
+
+/* ---------- Avatar (top-right) ---------- */
+.cv-avatar{
+    width:36px;height:36px;border-radius:50%;
+    background:linear-gradient(135deg,var(--primary),#5c0d1c);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-family:'Poppins',sans-serif;font-size:0.92rem;
+    border:1.5px solid var(--border);
+    margin-left:auto;
+    box-shadow:0 4px 14px rgba(230,57,80,0.3);
+    transition:transform .2s ease, box-shadow .2s ease;
+}
+.cv-avatar:hover{transform:scale(1.08);box-shadow:0 6px 18px rgba(230,57,80,0.5);}
+
+/* ---------- Search dropdown ---------- */
+div[data-testid="stSelectbox"] > div > div{
+    background:rgba(22,22,29,0.65) !important;
+    border:1.5px solid var(--border) !important;
+    border-radius:16px !important;
+    color:var(--text) !important;
+    backdrop-filter:blur(10px);
+    box-shadow:0 4px 24px rgba(0,0,0,0.35);
+    transition:all .3s ease !important;
+}
+div[data-testid="stSelectbox"] > div > div:hover,
+div[data-testid="stSelectbox"] > div > div:focus-within{
+    border-color:var(--primary) !important;
+    box-shadow:0 0 0 4px rgba(230,57,80,0.18) !important;
+}
+div[data-testid="stSelectbox"] label{display:none;}
+
+/* ---------- Instant preview card (shown the moment a movie is selected) ---------- */
+.cv-preview-card{
+    display:flex;gap:16px;align-items:center;
+    background:var(--card);border:1px solid var(--border);
+    border-radius:16px;padding:14px 18px;margin-top:14px;
+    animation:fadeUp .35s ease;
+}
+.cv-preview-poster{
+    width:64px;height:96px;object-fit:cover;border-radius:10px;flex-shrink:0;
+    box-shadow:0 6px 18px rgba(0,0,0,0.4);
+}
+.cv-preview-info{flex:1;min-width:0;}
+.cv-preview-title{
+    font-family:'Poppins',sans-serif;font-weight:700;font-size:1.05rem;margin-bottom:4px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.cv-preview-meta{color:var(--gold);font-size:0.82rem;font-weight:600;margin-bottom:4px;}
+.cv-preview-genres{color:var(--muted);font-size:0.8rem;}
+[class*="st-key-details_preview"]{margin-top:10px;}
+
+/* Primary CTA buttons (search CTA, View Details) */
+[class*="st-key-cta_"] button,
+[class*="st-key-details_"] button{
+    background:linear-gradient(135deg,var(--primary),var(--secondary)) !important;
+    color:#fff !important;border:none !important;
+    border-radius:14px !important;
+    padding:0.7rem 1.4rem !important;
+    font-family:'Poppins',sans-serif !important;font-weight:600 !important;
+    font-size:0.92rem !important;letter-spacing:0.3px;
+    box-shadow:0 8px 24px rgba(230,57,80,0.35) !important;
+    transition:transform .18s ease, box-shadow .18s ease !important;
+    width:100% !important;
+}
+[class*="st-key-cta_"] button:hover,
+[class*="st-key-details_"] button:hover{
+    transform:translateY(-2px) scale(1.015) !important;
+    box-shadow:0 12px 30px rgba(230,57,80,0.5) !important;
+}
+[class*="st-key-cta_"] button:active,
+[class*="st-key-details_"] button:active{transform:translateY(0) scale(0.96) !important;}
+
+/* ---------- Favorite / watchlist heart toggle button on cards ---------- */
+[class*="st-key-fav_"] button{
+    background:rgba(10,10,16,0.75) !important;
+    border:1px solid var(--border) !important;
+    border-radius:10px !important;
+    padding:0.4rem !important;
+    width:100% !important;
+    font-size:0.95rem !important;
+    transition:all .2s cubic-bezier(.34,1.56,.64,1) !important;
+}
+[class*="st-key-fav_"] button:hover{
+    background:var(--primary) !important;
+    border-color:var(--primary) !important;
+    transform:scale(1.12) !important;
+}
+[class*="st-key-fav_"] button:active{transform:scale(0.9) !important;}
+
+/* ---------- Section headings ---------- */
+.cv-section-title{
+    font-family:'Poppins',sans-serif;font-weight:700;font-size:1.5rem;
+    margin:30px 0 18px 4px;display:flex;align-items:center;gap:10px;
+    animation:fadeUp .4s ease;
+}
+.cv-section-title::before{
+    content:'';width:5px;height:22px;background:linear-gradient(180deg,var(--primary),var(--gold));
+    border-radius:4px;display:inline-block;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* ---------- Hero (Home only) ---------- */
+.cv-hero{
+    position:relative;border-radius:22px;overflow:hidden;
+    margin:22px 0 30px 0;padding:70px 40px;
+    background:
+      linear-gradient(160deg, rgba(230,57,80,0.22) 0%, rgba(10,10,16,0.97) 55%),
+      linear-gradient(0deg, rgba(10,10,16,1) 0%, rgba(20,20,28,1) 100%);
+    text-align:center;border:1px solid var(--border);
+    animation:heroFade .8s ease;
+}
+@keyframes heroFade{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.cv-hero h1{
+    font-family:'Poppins',sans-serif;font-weight:800;
+    font-size:clamp(2.2rem,5vw,3.6rem);margin:0 0 8px 0;
+    text-shadow:0 6px 30px rgba(0,0,0,0.6);letter-spacing:-1px;
+}
+.cv-hero h1 span{
+    background:linear-gradient(90deg,var(--primary),var(--gold),var(--primary));
+    background-size:200% auto;
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:shine 4s linear infinite;
+}
+@keyframes shine{to{background-position:200% center;}}
+.cv-hero p{color:var(--muted);font-size:clamp(1rem,1.6vw,1.15rem);margin-bottom:6px;font-weight:400;}
+
+/* ---------- Page banner (non-home sections) ---------- */
+.cv-page-banner{padding:26px 4px 6px 4px;animation:fadeUp .45s ease;}
+.cv-page-banner h2{font-family:'Poppins',sans-serif;font-weight:800;font-size:2rem;margin:0;}
+.cv-page-banner p{color:var(--muted);margin-top:4px;font-size:0.95rem;}
+
+/* ---------- Movie card ---------- */
+.cv-card{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:16px;overflow:hidden;position:relative;
+    transition:transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease, border-color .3s ease, background .3s ease;
+    animation:cardIn .45s ease both;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(.96);}to{opacity:1;transform:translateY(0) scale(1);}}
+.cv-card:hover{
+    background:var(--card-hover);
+    transform:translateY(-8px) scale(1.02);
+    box-shadow:0 20px 40px rgba(0,0,0,0.55), 0 0 0 1px var(--primary);
+    border-color:var(--primary);
+}
+.cv-poster-wrap{position:relative;overflow:hidden;aspect-ratio:2/3;}
+.cv-poster-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease;}
+.cv-card:hover .cv-poster-wrap img{transform:scale(1.1);}
+.cv-poster-overlay{
+    position:absolute;inset:0;
+    background:linear-gradient(0deg, rgba(10,10,16,0.95) 0%, rgba(10,10,16,0.05) 55%);
+}
+.cv-rating-badge{
+    position:absolute;top:10px;right:10px;
+    background:rgba(10,10,16,0.85);backdrop-filter:blur(6px);
+    border:1px solid var(--border);
+    color:var(--gold);font-weight:700;font-size:0.76rem;
+    padding:4px 9px;border-radius:20px;font-family:'Poppins',sans-serif;
+    transition:transform .2s ease;
+}
+.cv-card:hover .cv-rating-badge{transform:scale(1.08);}
+.cv-card-body{padding:10px 12px 12px 12px;}
+.cv-card-title{
+    font-family:'Poppins',sans-serif;font-weight:700;font-size:1.05rem;
+    margin:0 0 8px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.cv-card-btn-row{display:flex;gap:6px;}
+.cv-card-btn-row > div:first-child{flex:3;}
+.cv-card-btn-row > div:last-child{flex:1;}
+
+
+/* Stagger card entrance a bit so grid doesn't pop in all at once */
+.cv-card:nth-child(1){animation-delay:.02s;}
+.cv-card:nth-child(2){animation-delay:.06s;}
+.cv-card:nth-child(3){animation-delay:.10s;}
+.cv-card:nth-child(4){animation-delay:.14s;}
+.cv-card:nth-child(5){animation-delay:.18s;}
+
+/* ---------- Skeleton loading ---------- */
+.cv-skel{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.cv-skel-poster{
+    aspect-ratio:2/3;
+    background:linear-gradient(100deg, #16161d 30%, #232330 50%, #16161d 70%);
+    background-size:200% 100%;animation:shimmer 1.4s infinite;
+}
+.cv-skel-line{
+    height:12px;margin:14px;border-radius:6px;
+    background:linear-gradient(100deg, #16161d 30%, #232330 50%, #16161d 70%);
+    background-size:200% 100%;animation:shimmer 1.4s infinite;
+}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+/* ---------- Empty state ---------- */
+.cv-empty{
+    text-align:center;padding:70px 20px;color:var(--muted);
+    border:1.5px dashed var(--border);border-radius:18px;margin-top:20px;
+    animation:fadeUp .4s ease;
+}
+.cv-empty .cv-empty-icon{font-size:2.6rem;margin-bottom:12px;animation:logoFloat 3s ease-in-out infinite;}
+.cv-empty h3{color:var(--text);font-family:'Poppins',sans-serif;margin-bottom:6px;}
+
+/* ---------- Modal (st.dialog) ---------- */
+div[data-testid="stDialog"] div[role="dialog"]{
+    background:var(--card) !important;
+    border:1px solid var(--border) !important;
+    border-radius:20px !important;
+    animation:fadeUp .3s ease !important;
+}
+.cv-modal-title{font-family:'Poppins',sans-serif;font-weight:800;font-size:1.7rem;margin-bottom:2px;}
+.cv-modal-meta{color:var(--muted);font-size:0.88rem;margin-bottom:14px;}
+.cv-modal-overview{color:#dcdcdc;line-height:1.55;font-size:0.95rem;margin-bottom:16px;}
+.cv-pill{
+    display:inline-block;background:rgba(230,57,80,0.12);color:var(--secondary);
+    border:1px solid rgba(230,57,80,0.4);padding:3px 12px;border-radius:20px;
+    font-size:0.75rem;margin-right:6px;font-family:'Poppins',sans-serif;font-weight:600;
+}
+
+/* ---------- Modal detail-loading skeleton (fixes the "old movie flashes
+   before the new one loads" glitch — poster/title show instantly and
+   correctly; only this part shows a shimmer while details are fetched) ---------- */
+.cv-modal-skel-line{
+    height:14px;border-radius:6px;margin-bottom:10px;
+    background:linear-gradient(100deg, #16161d 30%, #232330 50%, #16161d 70%);
+    background-size:200% 100%;animation:shimmer 1.4s infinite;
+}
+.cv-modal-skel-block{
+    height:70px;border-radius:10px;margin-top:6px;
+    background:linear-gradient(100deg, #16161d 30%, #232330 50%, #16161d 70%);
+    background-size:200% 100%;animation:shimmer 1.4s infinite;
+}
+
+/* ---------- Auth page (Login / Sign Up) ---------- */
+.auth-hero{
+    text-align:center;padding:60px 20px 10px 20px;
+    animation:heroFade .7s ease;
+}
+.auth-hero h1{
+    font-family:'Poppins',sans-serif;font-weight:800;font-size:2.4rem;margin:14px 0 4px 0;
+}
+.auth-hero h1 span{
+    background:linear-gradient(90deg,var(--primary),var(--gold),var(--primary));
+    background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:shine 4s linear infinite;
+}
+.auth-hero p{color:var(--muted);font-size:0.95rem;margin-bottom:10px;}
+
+.stTabs [data-baseweb="tab-list"]{
+    max-width:420px;margin:22px auto 16px auto;gap:8px;
+    background:var(--card);border-radius:14px;border:1px solid var(--border);padding:6px;
+    box-shadow:0 8px 22px rgba(0,0,0,0.3);
+}
+.stTabs [data-baseweb="tab"]{
+    border-radius:10px !important;color:var(--muted) !important;
+    font-family:'Poppins',sans-serif !important;font-weight:600 !important;font-size:0.9rem !important;
+    padding:11px 6px !important;
+    transition:color .2s ease, background .2s ease !important;
+}
+.stTabs [aria-selected="true"]{
+    background:linear-gradient(135deg,var(--primary),var(--secondary)) !important;
+    color:#fff !important;
+    box-shadow:0 4px 14px rgba(230,57,80,0.35) !important;
+}
+
+/* Fix: Streamlit's built-in "Press Enter to submit form" hint sits under
+   the password show/hide eye icon and overlaps it inside a form. Nudge
+   the hint left so it clears the icon. (Best-effort — targets Streamlit's
+   internal testid, which may shift between versions.) */
+div[data-testid="stForm"] div[data-testid="InputInstructions"]{
+    right: 42px !important;
+}
+div[data-testid="stForm"] div[data-baseweb="input"] input[type="password"]{
+    padding-right: 42px !important;
+}
+
+div[data-testid="stForm"]{
+    max-width:420px;margin:14px auto 40px auto;
+    background:var(--card);border:1px solid var(--border);
+    border-radius:20px;padding:32px 28px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.45);
+    animation:fadeUp .4s ease;
+}
+div[data-testid="stForm"] input{
+    background:rgba(10,10,16,0.65) !important;
+    border:1.5px solid var(--border) !important;
+    border-radius:12px !important;color:var(--text) !important;
+}
+div[data-testid="stForm"] input:focus{
+    border-color:var(--primary) !important;
+    box-shadow:0 0 0 4px rgba(230,57,80,0.18) !important;
+}
+div[data-testid="stForm"] label{
+    color:var(--muted) !important;font-family:'Inter',sans-serif;font-size:0.85rem;
+}
+div[data-testid="stForm"] button{
+    background:linear-gradient(135deg,var(--primary),var(--secondary)) !important;
+    color:#fff !important;border:none !important;border-radius:14px !important;
+    font-family:'Poppins',sans-serif !important;font-weight:600 !important;
+    padding:0.7rem !important;margin-top:6px;
+    box-shadow:0 8px 24px rgba(230,57,80,0.35) !important;
+    transition:transform .18s ease, box-shadow .18s ease !important;
+}
+div[data-testid="stForm"] button:hover{
+    transform:translateY(-2px) scale(1.01) !important;
+    box-shadow:0 12px 30px rgba(230,57,80,0.5) !important;
+}
+
+/* ---------- Popover shared body styling (bell + profile both use this) ---------- */
+div[data-testid="stPopoverBody"]{
+    background:var(--card) !important;border:1px solid var(--border) !important;
+    border-radius:16px !important;padding:8px !important;
+    min-width:300px;
+    animation:fadeUp .25s ease;
+}
+
+/* ---------- Notifications bell button (dot only shows when there's something new) ---------- */
+[class*="st-key-bell_wrap_active"] div[data-testid="stPopover"] > div > button,
+[class*="st-key-bell_wrap_idle"] div[data-testid="stPopover"] > div > button{
+    background:linear-gradient(135deg,var(--card-hover),var(--card)) !important;
+    border:1.5px solid var(--border) !important;
+    color:var(--muted) !important;
+    width:36px !important;height:36px !important;
+    border-radius:50% !important;
+    padding:0 !important;font-size:1rem !important;
+    position:relative;
+    transition:all .2s ease !important;
+}
+[class*="st-key-bell_wrap_active"] div[data-testid="stPopover"] > div > button:hover,
+[class*="st-key-bell_wrap_idle"] div[data-testid="stPopover"] > div > button:hover{
+    border-color:var(--gold) !important;color:var(--gold) !important;
+    transform:scale(1.08) !important;
+    box-shadow:0 4px 14px rgba(255,176,32,0.3) !important;
+}
+[class*="st-key-bell_wrap_active"] div[data-testid="stPopover"] > div > button::after{
+    content:'';position:absolute;top:4px;right:5px;
+    width:8px;height:8px;border-radius:50%;
+    background:var(--primary);border:1.5px solid var(--bg);
+}
+.notif-header{
+    font-family:'Poppins',sans-serif;font-weight:700;font-size:0.95rem;
+    padding:8px 0 10px 4px;
+}
+.notif-empty{
+    text-align:center;color:var(--muted);font-size:0.85rem;padding:26px 10px;
+}
+[class*="st-key-clear_notif_btn"] button{
+    background:transparent !important;border:1px solid var(--border) !important;
+    color:var(--muted) !important;font-size:0.7rem !important;font-weight:600 !important;
+    padding:5px 6px !important;border-radius:8px !important;
+    font-family:'Poppins',sans-serif !important;margin-top:6px;
+    transition:all .2s ease !important;
+}
+[class*="st-key-clear_notif_btn"] button:hover{
+    border-color:var(--primary) !important;color:var(--primary) !important;
+}
+.notif-item{
+    display:flex;gap:10px;padding:9px 10px;border-radius:10px;
+    border-bottom:1px solid var(--border);
+    transition:background .15s ease;
+}
+.notif-item:last-child{border-bottom:none;}
+.notif-item:hover{background:var(--card-hover);}
+.notif-icon{font-size:1.2rem;line-height:1.4;}
+.notif-body{flex:1;}
+.notif-title{font-family:'Poppins',sans-serif;font-weight:600;font-size:0.83rem;margin-bottom:1px;}
+.notif-desc{color:var(--muted);font-size:0.78rem;line-height:1.35;margin-bottom:2px;}
+.notif-time{color:var(--gold);font-size:0.7rem;font-weight:600;}
+
+/* ---------- Profile popover trigger (circular avatar with initial) ---------- */
+[class*="st-key-profile_wrap"] div[data-testid="stPopover"] > div > button{
+    background:linear-gradient(135deg,var(--primary),#5c0d1c) !important;
+    border:1.5px solid var(--border) !important;
+    color:#fff !important;
+    width:36px !important;height:36px !important;
+    border-radius:50% !important;
+    font-weight:700 !important;font-family:'Poppins',sans-serif !important;font-size:0.92rem !important;
+    padding:0 !important;
+    transition:all .2s ease !important;
+}
+[class*="st-key-profile_wrap"] div[data-testid="stPopover"] > div > button:hover{
+    transform:scale(1.08) !important;
+    box-shadow:0 6px 18px rgba(230,57,80,0.5) !important;
+}
+
+/* ---------- Profile popover content (email, watchlist count, menu items) ---------- */
+.profile-email{
+    font-family:'Poppins',sans-serif;font-weight:700;font-size:0.9rem;
+    padding:8px 8px 0 8px;word-break:break-all;
+}
+.profile-sub{color:var(--muted);font-size:0.76rem;padding:2px 8px 8px 8px;}
+.profile-divider{height:1px;background:var(--border);margin:6px 4px 8px 4px;}
+[class*="st-key-profile_wrap"] [data-testid="stExpander"]{
+    background:transparent !important;border:1px solid var(--border) !important;
+    border-radius:10px !important;margin-bottom:6px !important;
+}
+[class*="st-key-profile_wrap"] [data-testid="stExpander"] summary{
+    font-family:'Poppins',sans-serif !important;font-size:0.82rem !important;font-weight:600 !important;
+    color:var(--text) !important;
+}
+[class*="st-key-profile_wrap"] [data-testid="stExpander"] p{
+    color:var(--muted) !important;font-size:0.78rem !important;line-height:1.5 !important;
+}
+[class*="st-key-logout_btn"] button{
+    background:transparent !important;border:1px solid var(--primary) !important;
+    color:var(--primary) !important;border-radius:10px !important;
+    font-family:'Poppins',sans-serif !important;font-weight:600 !important;font-size:0.82rem !important;
+    padding:8px !important;margin-top:4px;
+    transition:all .2s ease !important;
+}
+[class*="st-key-logout_btn"] button:hover{
+    background:var(--primary) !important;color:#fff !important;
+}
+
+/* ---------- Profile button (guest — opens login popup on click) ---------- */
+[class*="st-key-open_auth_btn"] button{
+    background:linear-gradient(135deg,var(--card-hover),var(--card)) !important;
+    border:1.5px solid var(--border) !important;
+    color:var(--muted) !important;
+    width:36px !important;height:36px !important;
+    border-radius:50% !important;
+    display:flex !important;align-items:center !important;justify-content:center !important;
+    font-size:1rem !important;padding:0 !important;
+    margin-left:auto;
+    transition:all .2s ease !important;
+}
+[class*="st-key-open_auth_btn"] button:hover{
+    border-color:var(--primary) !important;
+    color:var(--primary) !important;
+    transform:scale(1.08) !important;
+    box-shadow:0 4px 14px rgba(230,57,80,0.3) !important;
+}
+
+/* ---------- Footer ---------- */
+.cv-footer{
+    text-align:center;color:var(--muted);font-size:0.82rem;
+    margin-top:60px;padding:24px 0;border-top:1px solid var(--border);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width:768px){
+    .cv-hero{padding:40px 16px;}
+    .cv-hero h1{font-size:2rem;}
+    .cv-logo-text{font-size:1.05rem;}
+    [class*="st-key-nav_"] button{font-size:0.76rem !important;padding:6px 3px !important;}
+}
