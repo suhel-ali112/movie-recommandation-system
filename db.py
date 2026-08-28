@@ -1,18 +1,3 @@
-"""
-db.py — SQLite data layer for PopcornAI
-==========================================================
-Local email+password auth (no OAuth setup needed), plus:
-1. users        — email (PK), password_hash, salt
-2. watchlist    — per-user saved movies, keyed by email
-3. notifications — app-wide update feed (movies/app updates)
-4. notif_clear  — per-user "cleared before this timestamp" marker,
-                  so hitting Clear only affects that user's inbox,
-                  and it stays cleared across logout/login (it's in
-                  the DB, not session_state, which would reset).
-
-DB file `popcornai.db` is created automatically on first run.
-"""
-
 import sqlite3
 import hashlib
 import re
@@ -23,9 +8,7 @@ DB_FILE = "popcornai.db"
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
-# ==========================================================================
 # CONNECTION + SETUP
-# ==========================================================================
 def get_connection():
     conn = sqlite3.connect(DB_FILE, check_same_thread=False)
     conn.execute("PRAGMA foreign_keys = ON")
@@ -50,8 +33,7 @@ def _migrate_old_username_schema(c):
     crashing with 'no such column: email'. Safe to call every run — it's
     a no-op once the DB is already on the new schema."""
     try:
-        # Capture username -> real email BEFORE anything gets renamed/dropped,
-        # so watchlist rows can be correctly re-keyed by actual email.
+    
         username_to_email = {}
         if _table_exists(c, "users") and _column_exists(c, "users", "username") \
                 and _column_exists(c, "users", "email"):
@@ -60,7 +42,6 @@ def _migrate_old_username_schema(c):
                 if uemail:
                     username_to_email[uname] = uemail
 
-        # --- users table: rebuild keyed by email if it's still keyed by username ---
         if _table_exists(c, "users"):
             c.execute("PRAGMA table_info(users)")
             pk_col = next((row[1] for row in c.fetchall() if row[5] == 1), None)
@@ -79,8 +60,6 @@ def _migrate_old_username_schema(c):
                     FROM users_old
                 """)
                 c.execute("DROP TABLE users_old")
-
-        # --- watchlist table: rebuild keyed by email, using the captured mapping ---
         if _table_exists(c, "watchlist") and not _column_exists(c, "watchlist", "email"):
             if _column_exists(c, "watchlist", "username"):
                 c.execute("ALTER TABLE watchlist RENAME TO watchlist_old")
@@ -97,15 +76,14 @@ def _migrate_old_username_schema(c):
                 """)
                 c.execute("SELECT username, title, poster, movie_id FROM watchlist_old")
                 for uname, title, poster, movie_id in c.fetchall():
-                    real_email = username_to_email.get(uname, uname)  # fallback if no mapping found
+                    real_email = username_to_email.get(uname, uname) 
                     c.execute(
                         "INSERT OR IGNORE INTO watchlist (email, title, poster, movie_id) VALUES (?, ?, ?, ?)",
                         (real_email, title, poster, movie_id),
                     )
                 c.execute("DROP TABLE watchlist_old")
     except sqlite3.OperationalError:
-        # If anything about this migration goes sideways, don't crash the
-        # app over it — worst case old rows just stay under their old name.
+       
         pass
 
 
@@ -150,20 +128,19 @@ def init_db():
         )
     """)
     c.execute("""
-        CREATE TABLE IF NOT EXISTS tmdb_cache (
-            movie_id      INTEGER PRIMARY KEY,
-            poster_path   TEXT,
+        CREATE TABLE IF NOT EXISTS movie_cache (
+            title         TEXT PRIMARY KEY,
+            poster        TEXT,
             overview      TEXT,
             genres        TEXT,
             rating        REAL,
             runtime       TEXT,
             release_date  TEXT,
-            popularity    TEXT,
+            rated         TEXT,
+            imdb_id       TEXT,
             cached_at     TEXT
         )
     """)
-
-    # Seed a few starter notifications only once (table starts empty)
     c.execute("SELECT COUNT(*) FROM notifications")
     if c.fetchone()[0] == 0:
         now = datetime.utcnow()
@@ -194,10 +171,7 @@ def add_notification(icon, title, description):
     conn.commit()
     conn.close()
 
-
-# ==========================================================================
 # PASSWORD HASHING (simple, dependency-free — fine for a college project)
-# ==========================================================================
 def _hash_password(password, salt=None):
     if salt is None:
         salt = secrets.token_hex(16)
@@ -213,10 +187,7 @@ def _verify_password(password, salt, stored_hash):
 def is_valid_email(email):
     return bool(_EMAIL_RE.match((email or "").strip()))
 
-
-# ==========================================================================
 # USER AUTH — email is the identifier, no separate username
-# ==========================================================================
 def signup_user(email, password, confirm_password):
     email = (email or "").strip().lower()
 
@@ -261,10 +232,8 @@ def login_user(email, password):
         return True, "Login successful!"
     return False, "Incorrect password."
 
-
-# ==========================================================================
 # WATCHLIST (per-user via email, persisted in DB)
-# ==========================================================================
+
 def get_watchlist(email):
     if not email:
         return {}
@@ -276,7 +245,7 @@ def get_watchlist(email):
     return {title: {"poster": poster, "movie_id": movie_id} for title, poster, movie_id in rows}
 
 
-def add_to_watchlist(email, title, poster, movie_id):
+def add_to_watchlist(email, title, poster, movie_id=None):
     conn = get_connection()
     c = conn.cursor()
     c.execute(
@@ -294,12 +263,8 @@ def remove_from_watchlist(email, title):
     conn.commit()
     conn.close()
 
-
-# ==========================================================================
 # NOTIFICATIONS — global feed, per-user "cleared" marker so Clear doesn't
-# wipe them for everyone, and survives logout -> login for that user
-# (it's a DB row keyed by email, not session_state which would reset).
-# ==========================================================================
+
 def get_notifications(email=None):
     conn = get_connection()
     c = conn.cursor()
@@ -345,58 +310,57 @@ def clear_notifications(email):
     conn.commit()
     conn.close()
 
+# MOVIE DATA CACHE (OMDb) — persisted in SQLite, keyed by title (the one
 
-# ==========================================================================
-# TMDB RESPONSE CACHE — persisted in SQLite so posters/details fetched once
-# stay fetched even after the app restarts (st.cache_data alone resets
-# every time the Streamlit process restarts; this survives that).
-# ==========================================================================
-def get_cached_movie(movie_id):
+def get_cached_movie(title):
     conn = get_connection()
     c = conn.cursor()
     c.execute(
-        "SELECT poster_path, overview, genres, rating, runtime, release_date, popularity "
-        "FROM tmdb_cache WHERE movie_id = ?",
-        (movie_id,),
+        "SELECT poster, overview, genres, rating, runtime, release_date, rated, imdb_id "
+        "FROM movie_cache WHERE title = ?",
+        (title,),
     )
     row = c.fetchone()
     conn.close()
     if not row:
         return None
-    poster_path, overview, genres, rating, runtime, release_date, popularity = row
+    poster, overview, genres, rating, runtime, release_date, rated, imdb_id = row
     return {
-        "poster_path": poster_path or "",
+        "poster": poster or "",
         "overview": overview or "",
         "genres": genres or "",
         "rating": rating if rating is not None else 0,
         "runtime": runtime or "",
         "release_date": release_date or "",
-        "popularity": popularity or "",
+        "rated": rated or "",
+        "imdb_id": imdb_id or "",
+        "error": "",
     }
 
 
-def cache_movie(movie_id, data):
+def cache_movie(title, data):
     conn = get_connection()
     c = conn.cursor()
     c.execute(
         """
-        INSERT INTO tmdb_cache
-            (movie_id, poster_path, overview, genres, rating, runtime, release_date, popularity, cached_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(movie_id) DO UPDATE SET
-            poster_path=excluded.poster_path, overview=excluded.overview, genres=excluded.genres,
+        INSERT INTO movie_cache
+            (title, poster, overview, genres, rating, runtime, release_date, rated, imdb_id, cached_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(title) DO UPDATE SET
+            poster=excluded.poster, overview=excluded.overview, genres=excluded.genres,
             rating=excluded.rating, runtime=excluded.runtime, release_date=excluded.release_date,
-            popularity=excluded.popularity, cached_at=excluded.cached_at
+            rated=excluded.rated, imdb_id=excluded.imdb_id, cached_at=excluded.cached_at
         """,
         (
-            movie_id,
-            data.get("poster_path", ""),
+            title,
+            data.get("poster", ""),
             data.get("overview", ""),
             data.get("genres", ""),
             data.get("rating", 0),
             data.get("runtime", ""),
             data.get("release_date", ""),
-            data.get("popularity", ""),
+            data.get("rated", ""),
+            data.get("imdb_id", ""),
             datetime.utcnow().isoformat(),
         ),
     )

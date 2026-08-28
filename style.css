@@ -1,15 +1,12 @@
-/* ==========================================================================
-   PopcornAI — Premium OTT Theme (v5: bugfixes + refreshed palette + animation)
-   ========================================================================== */
 
 :root{
     --bg:#0A0A10;
     --card:#16161D;
     --card-hover:#1C1C25;
-    --primary:#E63950;      /* richer crimson-pink instead of flat red */
+    --primary:#E63950;      
     --secondary:#FF6B6B;
-    --gold:#FFB020;         /* warm gold accent for ratings/highlights */
-    --accent:#7C3AED;       /* violet used only in hero gradient for depth */
+    --gold:#FFB020;        
+    --accent:#7C3AED;       
     --text:#F5F5F7;
     --muted:#9A9AA5;
     --border:#25252E;
@@ -51,8 +48,8 @@
     letter-spacing:-0.3px;white-space:nowrap;
 }
 
-/* ---------- Nav link buttons (Home/Trending/Top Rated/Watchlist) ---------- */
-/* FIX: "Trending" was wrapping to 2 lines — nowrap + no shrink now enforced */
+/* ---------- Nav link buttons---------- */
+
 [class*="st-key-nav_"] button{
     background:transparent !important;
     border:none !important;
@@ -296,9 +293,7 @@ div[data-testid="stDialog"] div[role="dialog"]{
     font-size:0.75rem;margin-right:6px;font-family:'Poppins',sans-serif;font-weight:600;
 }
 
-/* ---------- Modal detail-loading skeleton (fixes the "old movie flashes
-   before the new one loads" glitch — poster/title show instantly and
-   correctly; only this part shows a shimmer while details are fetched) ---------- */
+/* ---------- Modal detail-loading skeleton  ---------- */
 .cv-modal-skel-line{
     height:14px;border-radius:6px;margin-bottom:10px;
     background:linear-gradient(100deg, #16161d 30%, #232330 50%, #16161d 70%);
@@ -342,10 +337,7 @@ div[data-testid="stDialog"] div[role="dialog"]{
     box-shadow:0 4px 14px rgba(230,57,80,0.35) !important;
 }
 
-/* Fix: Streamlit's built-in "Press Enter to submit form" hint sits under
-   the password show/hide eye icon and overlaps it inside a form. Nudge
-   the hint left so it clears the icon. (Best-effort — targets Streamlit's
-   internal testid, which may shift between versions.) */
+
 div[data-testid="stForm"] div[data-testid="InputInstructions"]{
     right: 42px !important;
 }

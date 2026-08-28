@@ -1,12 +1,3 @@
-"""
-auth.py — Login/Signup UI for PopcornAI
-==========================================================
-Pure UI layer. All actual storage (users, password hashing) lives in
-db.py and uses SQLite (popcornai.db). Login/Signup now both ask for
-Gmail/Email instead of a separate username — whatever email you sign
-up with is the same one you log in with later.
-"""
-
 import streamlit as st
 from db import signup_user, login_user, get_watchlist
 
